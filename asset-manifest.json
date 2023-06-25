@@ -1,0 +1,14 @@
+{
+  "files": {
+    "main.css": "/goit-react-hw-04-images/static/css/main.a3da4412.css",
+    "main.js": "/goit-react-hw-04-images/static/js/main.25dc5a5d.js",
+    "static/media/pixabay-logo.svg": "/goit-react-hw-04-images/static/media/pixabay-logo.f3b6f32ed231b053310d13574b47d288.svg",
+    "index.html": "/goit-react-hw-04-images/index.html",
+    "main.a3da4412.css.map": "/goit-react-hw-04-images/static/css/main.a3da4412.css.map",
+    "main.25dc5a5d.js.map": "/goit-react-hw-04-images/static/js/main.25dc5a5d.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.a3da4412.css",
+    "static/js/main.25dc5a5d.js"
+  ]
+}
