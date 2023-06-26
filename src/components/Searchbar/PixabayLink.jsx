@@ -26,7 +26,7 @@ export const PixabayLink = () => {
   return (
     <Link href="https://pixabay.com/" target="_blank">
       <span>Images are free from</span>
-      <Picture class="pixabay-logo" src={logo} alt="pixabay logo" />
+      <Picture src={logo} alt="pixabay logo" />
     </Link>
   );
 };

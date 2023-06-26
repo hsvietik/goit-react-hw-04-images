@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { AppContainer } from './App.styled';
@@ -8,52 +8,39 @@ import { Button } from './Button/Button';
 import { fetchPictures } from '../api';
 import { Loader } from './Loader/Loader';
 
-export class App extends Component {
-  abortCtrl;
-  state = {
-    query: '',
-    currentPage: 1,
-    pictures: [],
-    totalHits: 0,
-    isLoading: false,
-  };
-  setQuery = query => {
-    this.setState({ query });
-  };
-  setPage = () => {
-    this.setState(prevState => {
-      return { currentPage: prevState.currentPage + 1 };
-    });
-  };
-  async componentDidUpdate(_, prevState) {
-    const { query, currentPage } = this.state;
-    const newQuery = prevState.query !== query;
-    const newPage = prevState.currentPage !== currentPage;
-    if (!query) {
-      return toast.info(`Enter your query in the search bar.`);
-    }
-    if (newQuery) {
-      this.setState({ pictures: [], currentPage: 1 });
-    }
-    if (newQuery || newPage) {
-      if (this.abortCtrl) {
-        this.abortCtrl.abort();
-      }
-      this.abortCtrl = new AbortController();
+export function App() {
+  const abortCtrl = useRef();
+  const [query, setQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pictures, setPictures] = useState([]);
+  const [totalHits, setTotalHits] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
 
+  const setPage = () => setCurrentPage(prevState => prevState + 1);
+  const onQueryChange = query => {
+    setQuery(query);
+    setPictures([]);
+    setCurrentPage(1);
+    setTotalHits(0);
+  };
+  useEffect(() => {
+    if (query === '') return;
+
+    async function loadPictures() {
+      if (abortCtrl.current) {
+        abortCtrl.current.abort();
+      }
+      abortCtrl.current = new AbortController();
       try {
-        this.setState({ isLoading: true });
+        setIsLoading(true);
         const response = await fetchPictures({
           query,
           currentPage,
-          abortCtrl: this.abortCtrl,
+          abortCtrl,
         });
-        this.setState(prevState => {
-          return {
-            pictures: [...prevState.pictures, ...response.hits],
-            totalHits: response.totalHits,
-          };
-        });
+        setPictures(prevPictures => [...prevPictures, ...response.hits]);
+        setTotalHits(response.totalHits);
+
         if (currentPage > 1) {
           setTimeout(() => {
             window.scrollBy({
@@ -72,27 +59,23 @@ export class App extends Component {
           return toast.warn(`Oops, something went wrong.`);
         }
       } finally {
-        this.setState({ isLoading: false });
+        setIsLoading(false);
       }
-    } else {
-      return;
     }
-  }
+    loadPictures();
+  }, [currentPage, query]);
 
-  render() {
-    const { pictures, isLoading, totalHits, currentPage } = this.state;
-    const isEmptyArray = pictures.length === 0;
-    const islastPage = currentPage > totalHits / 12;
-    return (
-      <AppContainer>
-        <Searchbar onSubmit={this.setQuery} />
-        <ImageGallery pictures={pictures} />
-        {isLoading && <Loader />}
-        {!isEmptyArray && !islastPage && !isLoading && (
-          <Button onClick={this.setPage} />
-        )}
-        <ToastContainer autoClose={3000} />
-      </AppContainer>
-    );
-  }
+  const isEmptyArray = pictures.length === 0;
+  const islastPage = currentPage > totalHits / 12;
+  return (
+    <AppContainer>
+      <Searchbar onSubmit={query => onQueryChange(query)} />
+      <ImageGallery pictures={pictures} />
+      {isLoading && <Loader />}
+      {!isEmptyArray && !islastPage && !isLoading && (
+        <Button onClick={setPage} />
+      )}
+      <ToastContainer autoClose={3000} />
+    </AppContainer>
+  );
 }
